@@ -8,6 +8,7 @@ import java.util.regex.Pattern
 import org.w3c.dom.NodeList
 import org.w3c.dom.Node
 import org.w3c.dom.Element
+
 public class AutoFactory extends DefaultTask {
     @TaskAction
     def create() {
@@ -20,6 +21,8 @@ public enum DimenType {
 }
 
 public class DimenFactory extends DefaultTask {
+    @Input
+    int[] dimens = [320, 360, 384, 411, 480, 540, 600, 800, 1024, 1280];
     @Input
     int fromDimen = 300;
     @Input
@@ -93,7 +96,7 @@ public class DimenFactory extends DefaultTask {
             //Sort
             dps = new TreeMap<>(dps);
             sps = new TreeMap<>(sps);
-            for (double dimen = fromDimen; dimen <= maxSize; dimen = dimen + 30) {
+            for (int dimen : dimens) {
                 String folder = resFolder + "values-sw" + (int) dimen + "dp";
                 String fileName = folder + "/auto_dimens.xml";
                 new File(folder).mkdir();
@@ -122,7 +125,7 @@ public class DimenFactory extends DefaultTask {
 
     def autoCreateDimen() {
         println "Auto create dimension file and values";
-        for (double dimen = fromDimen; dimen <= maxSize; dimen = dimen + 30) {
+        for (int dimen : dimens) {
             String folder = resFolder + "values-sw" + (int) dimen + "dp";
             String fileName = folder + "/auto_dimens_positive.xml";
             new File(folder).mkdir();
@@ -131,19 +134,19 @@ public class DimenFactory extends DefaultTask {
             printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
             printWriter.println("<resources>");
             for (int i = 1; i <= positiveMaxDP; i++) {
-                double ratio = i / fromDimen;
+                double ratio = i / dimens[0];
                 double sdp = ratio * dimen;
                 printWriter.printf("\t<dimen name=\"dp_%d\">%.2fdp</dimen>\r\n", i, sdp);
             }
             for (int i = 1; i <= positiveMaxSP; i++) {
-                double ratio = i / fromDimen;
+                double ratio = i / dimens[0];
                 double sdp = ratio * dimen;
                 printWriter.printf("\t<dimen name=\"sp_%d\">%.2fsp</dimen>\r\n", i, sdp);
             }
             printWriter.println("</resources>");
             printWriter.close();
         }
-        for (double dimen = fromDimen; dimen <= 800; dimen = dimen + 30) {
+        for (int dimen : dimens) {
             String folder = resFolder + "values-sw" + (int) dimen + "dp";
             String fileName = folder + "/auto_dimens_negative.xml";
             new File(folder).mkdir();
@@ -152,12 +155,12 @@ public class DimenFactory extends DefaultTask {
             printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
             printWriter.println("<resources>");
             for (int i = 1; i <= negativeMaxDP; i++) {
-                double ratio = i / fromDimen;
+                double ratio = i / dimens[0];
                 double sdp = ratio * dimen;
                 printWriter.printf("\t<dimen name=\"dp_minus%d\">%.2fdp</dimen>\r\n", i, -sdp);
             }
             for (int i = 1; i <= negativeMaxSP; i++) {
-                double ratio = i / fromDimen;
+                double ratio = i / dimens[0];
                 double sdp = ratio * dimen;
                 printWriter.printf("\t<dimen name=\"sp_minus%d\">%.2fsp</dimen>\r\n", i, -sdp);
             }
@@ -219,8 +222,7 @@ public class DimenFactory extends DefaultTask {
                 return i1 - i2;
             }
         });
-
-        for (double dimen = fromDimen; dimen <= maxSize; dimen = dimen + 30) {
+        for (int dimen : dimens) {
             String folder = resFolder + "values-sw" + (int) dimen + "dp";
             String fileName = folder + "/auto_dimens.xml";
             new File(folder).mkdirs();
@@ -318,6 +320,7 @@ task createDimen(type: DimenFactory) {
 }
 
 createDimen {
+    dimens = [320, 360, 384, 411, 480, 540, 600, 800, 1024, 1280];
     fromDimen = 360
     positiveMaxDP = 200//change to 600 or any other value if needed
     positiveMaxSP = 60//change to 600 or any other value if needed
