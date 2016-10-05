@@ -8,3 +8,5 @@ dp_example.png
 .idea/*
 .gradle/*
 .gradle
+.iml
+*.iml
