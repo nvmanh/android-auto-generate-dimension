@@ -57,6 +57,27 @@ and using command:
     **./gradlew :{module_name}:createDimen**
 to generate dimension files.
 
+After generate you have:
+
+        src/main/res/
+
+        values-sw360dp
+        values-sw390dp
+        values-sw420dp
+        values-sw450dp
+        values-sw480dp
+        values-sw510dp
+        values-sw540dp
+        values-sw570dp
+        values-sw600dp
+        values-sw630dp
+        values-sw660dp
+        values-sw690dp
+        values-sw720dp
+        values-sw750dp
+        values-sw780dp
+        values-sw810dp
+        
 ##Contact:
 
     If you have any problem, please contact me: manhduongvtt@gmail.com
