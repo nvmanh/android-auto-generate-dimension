@@ -134,7 +134,7 @@ public class DimenFactory extends DefaultTask {
             printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
             printWriter.println("<resources>");
             for (int i = 1; i <= positiveMaxDP; i++) {
-                double ratio = i / dimens[0];
+                double ratio = i / fromDimen;
                 double sdp = ratio * dimen;
                 printWriter.printf("\t<dimen name=\"dp_%d\">%.2fdp</dimen>\r\n", i, sdp);
             }
@@ -155,12 +155,12 @@ public class DimenFactory extends DefaultTask {
             printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
             printWriter.println("<resources>");
             for (int i = 1; i <= negativeMaxDP; i++) {
-                double ratio = i / dimens[0];
+                double ratio = i / fromDimen;
                 double sdp = ratio * dimen;
                 printWriter.printf("\t<dimen name=\"dp_minus%d\">%.2fdp</dimen>\r\n", i, -sdp);
             }
             for (int i = 1; i <= negativeMaxSP; i++) {
-                double ratio = i / dimens[0];
+                double ratio = i / fromDimen;
                 double sdp = ratio * dimen;
                 printWriter.printf("\t<dimen name=\"sp_minus%d\">%.2fsp</dimen>\r\n", i, -sdp);
             }
