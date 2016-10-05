@@ -4,3 +4,7 @@ src/main/bin/
 src/main/gen/
 sdp_example.png
 dp_example.png
+.idea
+.idea/*
+.gradle/*
+.gradle
