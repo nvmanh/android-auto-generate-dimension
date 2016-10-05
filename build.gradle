@@ -1,0 +1,404 @@
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import org.w3c.dom.NodeList
+import org.w3c.dom.Node
+import org.w3c.dom.Element
+
+apply plugin: 'com.android.library'
+//apply plugin: 'maven'
+//apply plugin: 'signing'
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
+    }
+}
+
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        minSdkVersion 13
+        targetSdkVersion 23
+    }
+}
+
+public class AutoFactory extends DefaultTask {
+    @TaskAction
+    def create() {
+
+    }
+}
+
+public enum DimenType {
+    FROM_LAYOUT, FROM_DIMEN_FILE, AUTO_CREATE
+}
+
+public class DimenFactory extends DefaultTask {
+    @Input
+    int fromDimen = 300;
+    @Input
+    double positiveMaxDP = 200
+    @Input
+    double positiveMaxSP = 60
+    @Input
+    double negativeMaxDP = 60
+    @Input
+    double negativeMaxSP = 20
+    int maxSize = 810;
+    @Input
+    DimenType type = DimenType.FROM_LAYOUT
+    @Input
+    String dimenFileName = "values/dimen.xml"
+
+    String resFolder = project.getProjectDir().getPath() + "/src/main/res/"
+    String layoutFolder = project.getProjectDir().getPath() + "/src/main/res/layout"
+    String layoutLandFolder = project.getProjectDir().getPath() + "/src/main/res/layout-land"
+
+    @TaskAction
+    def create() {
+        switch (type) {
+            case DimenType.FROM_LAYOUT:
+                createDimenFromLayout();
+                break;
+            case DimenType.AUTO_CREATE:
+                autoCreateDimen();
+                break;
+            case DimenType.FROM_DIMEN_FILE:
+                createDimenFromDimenFile();
+                break;
+            default:
+                break;
+        }
+    }
+
+    def createDimenFromDimenFile() {
+        println "Start convert dimen from value file to other screen size";
+        String path = resFolder + dimenFileName;
+        Map<String, String> pairs = new HashMap<>();
+        try {
+            File fXmlFile = new File(path);
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(fXmlFile);
+            doc.getDocumentElement().normalize();
+
+            NodeList nList = doc.getElementsByTagName("dimen");
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    pairs.put(eElement.getAttribute("name"), eElement.getTextContent())
+
+                }
+            }
+            Map<String, Double> dps = new HashMap<>();
+            Map<String, Double> sps = new HashMap<>();
+
+            for (Map.Entry<String, String> entry : pairs) {
+                String mVal = entry.getValue();
+                mVal = mVal.replaceAll("dp", "").replaceAll("sp", "");
+                double val = java.lang.Double.valueOf(mVal);
+                if (entry.getValue().contains("dp")) {
+                    dps.put(entry.getKey(), val);
+                } else {
+                    sps.put(entry.getKey(), val);
+                }
+            }
+            //Sort
+            dps = new TreeMap<>(dps);
+            sps = new TreeMap<>(sps);
+            for (double dimen = fromDimen; dimen <= maxSize; dimen = dimen + 30) {
+                String folder = resFolder + "values-sw" + (int) dimen + "dp";
+                String fileName = folder + "/auto_dimens.xml";
+                new File(folder).mkdir();
+                new File(fileName).createNewFile();
+                PrintWriter printWriter = new PrintWriter(fileName);
+                printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+                printWriter.println("<resources>");
+                for (Map.Entry<String, Double> entry : dps) {
+                    double ratio = entry.getValue() / fromDimen;
+                    double sdp = ratio * dimen;
+                    printWriter.printf("\t<dimen name=\"%s\">%.2fdp</dimen>\r\n", entry.getKey(), sdp);
+                }
+                for (Map.Entry<String, Double> entry : sps) {
+                    double ratio = entry.getValue() / fromDimen;
+                    double sdp = ratio * dimen;
+                    printWriter.printf("\t<dimen name=\"%s\">%.2fsp</dimen>\r\n", entry.getKey(), sdp);
+                }
+                printWriter.println("</resources>");
+                printWriter.close();
+            }
+        } catch (Exception e) {
+            println e.getMessage();
+        }
+
+    }
+
+    def autoCreateDimen() {
+        println "Auto create dimension file and values";
+        for (double dimen = fromDimen; dimen <= maxSize; dimen = dimen + 30) {
+            String folder = resFolder + "values-sw" + (int) dimen + "dp";
+            String fileName = folder + "/auto_dimens_positive.xml";
+            new File(folder).mkdir();
+            new File(fileName).createNewFile();
+            PrintWriter printWriter = new PrintWriter(fileName);
+            printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            printWriter.println("<resources>");
+            for (int i = 1; i <= positiveMaxDP; i++) {
+                double ratio = i / fromDimen;
+                double sdp = ratio * dimen;
+                printWriter.printf("\t<dimen name=\"dp_%d\">%.2fdp</dimen>\r\n", i, sdp);
+            }
+            for (int i = 1; i <= positiveMaxSP; i++) {
+                double ratio = i / fromDimen;
+                double sdp = ratio * dimen;
+                printWriter.printf("\t<dimen name=\"sp_%d\">%.2fsp</dimen>\r\n", i, sdp);
+            }
+            printWriter.println("</resources>");
+            printWriter.close();
+        }
+        for (double dimen = fromDimen; dimen <= 800; dimen = dimen + 30) {
+            String folder = resFolder + "values-sw" + (int) dimen + "dp";
+            String fileName = folder + "/auto_dimens_negative.xml";
+            new File(folder).mkdir();
+            new File(fileName).createNewFile();
+            PrintWriter printWriter = new PrintWriter(fileName);
+            printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            printWriter.println("<resources>");
+            for (int i = 1; i <= negativeMaxDP; i++) {
+                double ratio = i / fromDimen;
+                double sdp = ratio * dimen;
+                printWriter.printf("\t<dimen name=\"dp_minus%d\">%.2fdp</dimen>\r\n", i, -sdp);
+            }
+            for (int i = 1; i <= negativeMaxSP; i++) {
+                double ratio = i / fromDimen;
+                double sdp = ratio * dimen;
+                printWriter.printf("\t<dimen name=\"sp_minus%d\">%.2fsp</dimen>\r\n", i, -sdp);
+            }
+            printWriter.println("</resources>");
+            printWriter.close();
+        }
+    }
+
+    def createDimenFromLayout() {
+        println "Create dimen from res/layout dimension values";
+        Map<String, String> map = new HashMap<>();
+        addToMap(layoutFolder, map);
+        //addToMap(layoutLandFolder)
+        Set<String> holder = new HashSet<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            Set<String> childHolder = new HashSet<>();
+            String val = entry.getValue();
+            getDpValues(val, childHolder);
+            holder.addAll(childHolder);
+            for (String s : childHolder) {
+                int valInt = java.lang.Integer.parseInt(s.replaceAll("sp", "").replaceAll("dp", ""));
+                if (s.contains("dp")) {
+                    if (valInt < 0) {
+                        val = val.replaceAll(s, "@dimen/dp_minus" + (-valInt));
+                    } else {
+                        val = val.replaceAll(s, "@dimen/dp_" + valInt);
+                    }
+                } else if (s.contains("sp")) {
+                    if (valInt < 0) {
+                        val = val.replaceAll(s, "@dimen/sp_minute" + (-valInt));
+                    } else {
+                        val = val.replaceAll(s, "@dimen/sp_" + valInt);
+                    }
+                }
+            }
+            saveToFile(entry.getKey(), val);
+        }
+
+        Set<Integer> dps = new HashSet<>();
+        Set<Integer> sps = new HashSet<>();
+        for (String s : holder) {
+            if (s.contains("dp")) {
+                dps.add(java.lang.Integer.valueOf(s.replaceAll("dp", "")));
+            } else if (s.contains("sp")) {
+                sps.add(java.lang.Integer.valueOf(s.replaceAll("sp", "")));
+            }
+        }
+        LinkedList<Integer> listDps = new ArrayList<>(dps);
+        Collections.sort(listDps, new Comparator<Integer>() {
+            @Override
+            int compare(Integer i1, Integer i2) {
+                return i1 - i2;
+            }
+        });
+        LinkedList<Integer> listSps = new ArrayList<>(sps);
+        Collections.sort(listSps, new Comparator<Integer>() {
+            @Override
+            int compare(Integer i1, Integer i2) {
+                return i1 - i2;
+            }
+        });
+
+        for (double dimen = fromDimen; dimen <= maxSize; dimen = dimen + 30) {
+            String folder = resFolder + "values-sw" + (int) dimen + "dp";
+            String fileName = folder + "/auto_dimens.xml";
+            new File(folder).mkdirs();
+            new File(fileName).createNewFile();
+            PrintWriter printWriter = new PrintWriter(fileName);
+            printWriter.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            printWriter.println("<resources>");
+            for (int i = 0; i < listDps.size(); i++) {
+                int iVal = listDps.get(i);
+                double ratio = iVal / fromDimen;
+                double sdp = ratio * dimen;
+                if (iVal < 0) {
+                    printWriter.printf("\t<dimen name=\"dp_minus%d\">%.2fdp</dimen>\r\n", -iVal, sdp);
+                } else {
+                    printWriter.printf("\t<dimen name=\"dp_%d\">%.2fdp</dimen>\r\n", iVal, sdp);
+                }
+            }
+            for (int i = 0; i < listSps.size(); i++) {
+                int iVal = listSps.get(i);
+                double ratio = iVal / fromDimen;
+                double sdp = ratio * dimen;
+                if (iVal < 0) {
+                    printWriter.printf("\t<dimen name=\"sp_minus%d\">%.2fsp</dimen>\r\n", -iVal, sdp);
+                } else {
+                    printWriter.printf("\t<dimen name=\"sp_%d\">%.2fsp</dimen>\r\n", iVal, sdp);
+                }
+            }
+            printWriter.println("</resources>");
+            printWriter.close();
+        }
+    }
+
+    void saveToFile(String path, String content) {
+        try {
+            File file = new File(path);
+            if (file.exists()) file.delete();
+            file.createNewFile();
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(content);
+            bw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void getDpValues(String string, Set<String> holder) {
+        String[] vals = string.split("\n");
+        Pattern pattern = Pattern.compile(".*\\\"(.*)\\\".*");
+        for (String val : vals) {
+            Matcher matcher = pattern.matcher(val);
+            if (!matcher.find()) continue;
+            for (int i = 1; i <= matcher.groupCount(); i++) {
+                String mVal = matcher.group(i)
+                if (mVal != null && (mVal.contains("dp") || mVal.contains("sp"))
+                        && !mVal.contains("@dimen"))
+                    holder.add(mVal)
+            }
+        }
+    }
+
+    void addToMap(String path, Map<String, String> map) {
+        File file = new File(path);
+        if (!file.exists()) return;
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            for (File f : files) {
+                addToMap(f.getAbsolutePath(), map);
+            }
+        } else {
+            String content = fileToString(path);
+            println path;
+            map.put(path, content);
+        }
+    }
+
+    String fileToString(String path) {
+        try {
+            File f = new File(path);
+            FileInputStream inp = new FileInputStream(f);
+            byte[] bf = new byte[(int) f.length()];
+            inp.read(bf);
+            return new String(bf, "UTF-8");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+}
+
+
+task createDimen(type: DimenFactory) {
+}
+
+createDimen {
+    fromDimen = 360
+    positiveMaxDP = 200//change to 600 or any other value if needed
+    positiveMaxSP = 60//change to 600 or any other value if needed
+    negativeMaxDP = 60//change to 600 or any other value if needed
+    negativeMaxSP = 20//change to 600 or any other value if needed
+    type = DimenType.FROM_DIMEN_FILE
+    dimenFileName = 'values/dimens.xml' // name of file, for type = DimenType.FROM_DIMEN_FILE only
+}
+
+//signing {
+//    required { gradle.taskGraph.hasTask("uploadArchives") }
+//    sign configurations.archives
+//}
+//
+//uploadArchives {
+//    configuration = configurations.archives
+//    repositories.mavenDeployer {
+//        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+//
+//        repository(url: sonatypeRepo) {
+//            authentication(userName: sonatypeUsername,
+//                    password: sonatypePassword)
+//        }
+//
+//        pom.groupId = 'com.intuit.sdp'
+//        pom.artifactId = 'sdp-android'
+//        pom.version = '1.0.3'
+//
+//        pom.project {
+//            name 'sdp'
+//            packaging 'aar'
+//            description 'A scalable size unit for Andorid'
+//            url 'https://github.com/intuit/sdp'
+//
+//            scm {
+//                url 'https://github.com/intuit/sdp'
+//                connection 'scm:git@github.com:intuit/sdp.git'
+//                developerConnection 'scm:git@github.com:intuit/sdp.git'
+//            }
+//
+//            licenses {
+//                license {
+//                    name 'The MIT License (MIT)'
+//                    url 'https://github.com/intuit/sdp/blob/master/LICENSE'
+//                    distribution 'repo'
+//                }
+//            }
+//
+//            developers {
+//                developer {
+//                    id developerID
+//                    name developerName
+//                    email developerEmail
+//                }
+//            }
+//        }
+//    }
+//}
