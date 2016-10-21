@@ -22,7 +22,7 @@ public enum DimenType {
 
 public class DimenFactory extends DefaultTask {
     @Input
-    int[] dimens = [320, 360, 384, 411, 480, 540, 600, 800, 1024, 1280];
+    int[] dimens = [169, 189, 216, 250, 288, 292, 300, 307, 312, 318, 320, 323, 360, 384, 373, 401, 411, 424, 432, 441, 445, 453, 469, 480, 493, 515, 534, 538, 540, 576, 577, 600, 800, 801, 1024, 1280];
     @Input
     int fromDimen = 300;
     @Input
@@ -320,7 +320,7 @@ task createDimen(type: DimenFactory) {
 }
 
 createDimen {
-    dimens = [320, 360, 384, 411, 480, 540, 600, 800, 1024, 1280];
+    dimens = [169, 189, 216, 250, 288, 292, 300, 307, 312, 318, 320, 323, 360, 384, 373, 401, 411, 424, 432, 441, 445, 453, 469, 480, 493, 515, 534, 538, 540, 576, 577, 600, 800, 801, 1024, 1280];
     fromDimen = 360
     positiveMaxDP = 200//change to 600 or any other value if needed
     positiveMaxSP = 60//change to 600 or any other value if needed

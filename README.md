@@ -1,4 +1,10 @@
 # android-auto-generate-dimension
+
+## Find your support screen size here:
+
+        http://dpi.lv/
+        https://design.google.com/devices/
+
 ##Structure:
 1. Auto create dimension values with defined values:
 
