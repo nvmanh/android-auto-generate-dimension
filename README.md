@@ -5,8 +5,8 @@
         http://dpi.lv/
         https://design.google.com/devices/
 
-##Structure:
-1. Auto create dimension values with defined values:
+## Structure:
+#### 1. Auto create dimension values with defined values:
 
         createDimen {    
             fromDimen = 360
@@ -17,7 +17,7 @@
             type = DimenType.AUTO_CREATE
         }
 
-2. Auto get and make dimension file with value from your res/layout:   
+#### 2. Auto get and make dimension file with value from your res/layout:   
     
         createDimen {
             fromDimen = 360
@@ -29,7 +29,7 @@
         }
         
 
-3. Auto generate dimension values from your defined dimension file for
+#### 3. Auto generate dimension values from your defined dimension file for
 other screen size:
   
         createDimen {
@@ -42,7 +42,7 @@ other screen size:
             dimenFileName = 'values/dimens.xml' // name of file, for type = DimenType.FROM_DIMEN_FILE only
         }
 
-##Use:
+## Use:
 
         Copy file autodimension.gradlew to root of your project. If you use eclispe please install gradle
         then build this project to generate file dimension then add as library project
@@ -82,9 +82,11 @@ After generate you have:
         values-sw720dp
         values-sw750dp
         values-sw780dp
-        values-sw810dp
-        
-##Contact:
+        values-sw810dp
+## Note:
+        With size of actionbar, you must create different sizes, not using this tool (you can see the different size of tablet and phone)
+
+## Contact:
 
     If you have any problem, please contact me: manhduongvtt@gmail.com
     
