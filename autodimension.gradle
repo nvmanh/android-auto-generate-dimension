@@ -186,7 +186,7 @@ public class DimenFactory extends DefaultTask {
           }
         } else if (s.contains("sp")) {
           if (valInt < 0) {
-            val = val.replaceAll(s, "@dimen/sp_minute" + (-valInt));
+            val = val.replaceAll(s, "@dimen/sp_minus" + (-valInt));
           } else {
             val = val.replaceAll(s, "@dimen/sp_" + valInt);
           }
