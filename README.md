@@ -1,9 +1,9 @@
 # android-auto-generate-dimension
 
 ## Find your support screen size here:
+[http://dpi.lv/](http://dpi.lv/)
 
-        http://dpi.lv/
-        https://design.google.com/devices/
+[https://design.google.com/devices/](https://design.google.com/devices/)
 
 ## Structure:
 #### 1. Auto create dimension values with defined values:
@@ -49,18 +49,18 @@ other screen size:
     
 In terminal of android studio execute the following command:
 
-    **./gradlew createDimen**
+    ./gradlew createDimen
     
 If build success you can see many value-sw directories are created with 
     dimensions values.
     
 If your project has many modules, add:
 
-    **apply from '../autodimension.gradle'**
+    apply from '../autodimension.gradle'
 into your gradle file of module
 and using command: 
 
-    **./gradlew :{module_name}:createDimen**
+    ./gradlew :{module_name}:createDimen
 to generate dimension files.
 
 After generate you have:
